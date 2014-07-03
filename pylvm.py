@@ -3,13 +3,13 @@
 #
 # Copyright (C) 2014 by Jeremy Tammik, Autodesk Inc.
 #
-import md5, os.path, requests, shutil, time
+import json, md5, os.path, requests, shutil, time
 from optparse import OptionParser
 
 _version = '1.0'
 
-BASE_URL = 'https://developer.api.autodesk.com'
-BUCKET_KEY = 'jeremy_translate_bucket'
+BASE_URL = 'https://developer.api.autodesk.com/'
+BUCKET_KEY = 'jtbucket'
 
 _file_missing_prompt = "Error: specified %s file '%s' does not exist.\n"
 
@@ -87,7 +87,7 @@ def main():
   # https://developer.api.autodesk.com/authentication/v1/authenticate \
   # --header "Content-Type: application/x-www-form-urlencoded"
 
-  url = 'https://developer.api.autodesk.com/authentication/v1/authenticate'
+  url = BASE_URL + 'authentication/v1/authenticate'
 
   data = {
     'client_id' : consumer_key,
@@ -101,7 +101,7 @@ def main():
 
   r = requests.post(url, data=data, headers=headers)
 
-  if verbose:
+  if verbose or 200 != r.status_code:
     print r.status_code
     print r.headers['content-type']
     print type(r.content)
@@ -122,32 +122,91 @@ def main():
 
   # Step 3: Create a bucket
 
-  # curl -k \
-  # --header "Content-Type: application/json" --header "Authorization: Bearer fDqpZKYM7ExcC2694eQ1pwe8nwnW" \
-  # --data '{\"bucketKey\":\"mybucket\",\"policy\":\"transient\"}' \
-  # https://developer.api.autodesk.com/oss/v1/buckets
+  # Check for prior existence:
 
-  url = 'https://developer.api.autodesk.com/oss/v1/buckets'
+  # curl -k -X GET \
+  # -H "Authorization: Bearer lEaixuJ5wXby7Trk6Tb77g6Mi8IL" \
+  # https://developer.api.autodesk.com/oss/v1/buckets/mybucket/details
 
-  data = {
-    'bucketKey' : BUCKET_KEY,
-    'policy' : 'transient'
-  }
+  url = BASE_URL + 'oss/v1/buckets/' + BUCKET_KEY + '/details'
 
   headers = {
-    'Content-Type' : 'application/json',
     'Authorization' : 'Bearer ' + access_token
   }
 
-  r = requests.post(url, data=data, headers=headers)
+  print 'Step 3: Check whether bucket exists'
+  print 'curl -k -X GET -H "Authorization: Bearer %s" %s' % (access_token, url)
+
+  print url
+  print headers
+
+  r = requests.get(url, headers=headers)
 
   if verbose:
     print r.status_code
     print r.headers['content-type']
     print r.content
     # -- example results --
-    # 400
-    # None
+    # 200
+    # application/json; charset=utf-8
+    # {
+    #  "key":"jtbucket",
+    #  "owner":"NjEasFuPL6WAsNctq3VCgXDnTUBGa858",
+    #  "createDate":1404399358062,
+    #  "permissions":[{"serviceId":"NjEasFuPL6WAsNctq3VCgXDnTUBGa858","access":"full"}],
+    #  "policyKey":"transient"
+    # }
+
+  if 200 != r.status_code:
+
+    # Create a new bucket:
+
+    # curl -k \
+    # --header "Content-Type: application/json" --header "Authorization: Bearer fDqpZKYM7ExcC2694eQ1pwe8nwnW" \
+    # --data '{\"bucketKey\":\"mybucket\",\"policy\":\"transient\"}' \
+    # https://developer.api.autodesk.com/oss/v1/buckets
+
+    url = BASE_URL + 'oss/v1/buckets'
+
+    data = {
+      'bucketKey' : BUCKET_KEY,
+      'policy' : 'transient'
+    }
+
+    headers = {
+      'Content-Type' : 'application/json',
+      'Authorization' : 'Bearer ' + access_token
+    }
+
+    print 'Step 3: Create a bucket'
+    print 'curl -k -H "Authorization: Bearer %s" -H "Content-Type:application/json" --data "{\\"bucketKey\\":\\"%s\\",\\"policy\\":\\"transient\\"}" %s' % (access_token, BUCKET_KEY, url)
+
+    print url
+    print json.dumps(data)
+    print headers
+
+    r = requests.post(url, data=json.dumps(data), headers=headers)
+
+    if verbose or 200 != r.status_code:
+      print r.status_code
+      print r.headers['content-type']
+      print r.content
+      # -- example results --
+      # The Python request call failed, but the curl
+      # command that it generated worked and produced
+      # the following result:
+      #
+      # {
+      #  "key":"jtbucket",
+      #  "owner":"NjEasFuPL6WAsNctq3VCgXDnTUBGa858",
+      #  "createDate":1404399358062,
+      #  "permissions":[{"serviceId":"NjEasFuPL6WAsNctq3VCgXDnTUBGa858","access":"full"}],
+      #  "policyKey":"transient"
+      # }
+
+    if 200 != r.status_code:
+      print "Bucket creation returned status code %s." % r.status_code
+      raise SystemExit(6)
 
   # Step 4: Upload a file
 
@@ -158,9 +217,9 @@ def main():
   # -X PUT https://developer.api.autodesk.com/oss/v1/buckets/mybucket/objects/skyscpr1.3ds
 
   filesize = os.path.getsize( model_filepath )
-  model_filename = os.path.basename( model_filepath )
+  model_filename = os.path.basename( model_filepath ).replace('.','_')
 
-  url = 'https://developer.api.autodesk.com/oss/v1/buckets/' + BUCKET_KEY + '/object/' + model_filename
+  url = 'https://developer.api.autodesk.com/oss/v1/buckets/' + BUCKET_KEY + '/objects/' + model_filename
 
   headers = {
     'Content-Type' : 'application/octet-stream',
@@ -169,17 +228,37 @@ def main():
     'Expect' : ''
   }
 
-  files = {
-    model_filename : open( model_filepath, 'rb' )
-  }
+  print "Step 4: starting upload of model file '%s', %s bytes..." % (model_filename,filesize)
 
-  r = requests.put(url, headers=headers, files=files)
+  print 'curl -k -H "Authorization: Bearer %s" -H "Content-Length: %s" -H "Content-Type:application/octet-stream" -H "Expect:" -T "%s" -X PUT %s' % (access_token, filesize, model_filepath, url)
+
+  with open(model_filepath, 'rb') as f:
+    files = { model_filename : f }
+    r = requests.put(url, headers=headers, files=files)
+
+  #with open(model_filepath, 'rb') as f:
+  #  request = requests.put(url, headers=headers, data=f)
 
   if verbose:
     print r.status_code
     print r.headers['content-type']
     print r.content
     # -- example results --
+    # The Python request call failed, but the curl
+    # command that it generated worked and produced
+    # the following result:
+    #
+    # {
+    #   "bucket-key" : "jtbucket",
+    #   "objects" : [ {
+    #     "location" : "https://developer.api.autodesk.com/oss/v1/buckets/jtbucket/objects/two_columns_rvt",
+    #     "size" : 4165632,
+    #     "key" : "two_columns_rvt",
+    #     "id" : "urn:adsk.objects:os.object:jtbucket/two_columns_rvt",
+    #     "sha-1" : "cb15374248562743c5a99e0bdb0535f508a19848",
+    #     "content-type" : "application/octet-stream"
+    #   } ]
+    # }
 
 
 if __name__ == '__main__':
