@@ -59,10 +59,10 @@ def main():
   if (1 > n) or (1 < n):
     raise SystemExit(parser.print_help() or 1)
 
-  model_filename = args[0]
+  model_filepath = args[0]
 
-  if not os.path.exists( model_filename ):
-    print _file_missing_prompt % ('model', model_filename)
+  if not os.path.exists( model_filepath ):
+    print _file_missing_prompt % ('model', model_filepath)
     raise SystemExit(parser.print_help() or 2)
 
   # Step 1: Register and create application, retrieve credentials
@@ -82,10 +82,10 @@ def main():
 
   # Step 2: Get your access token
 
-  # curl \
+  # curl -k \
   # --data "client_id=obQDn8P0GanGFQha4ngKKVWcxwyvFAGE&client_secret=eUruM8HRyc7BAQ1e&grant_type=client_credentials" \
   # https://developer.api.autodesk.com/authentication/v1/authenticate \
-  # --header "Content-Type: application/x-www-form-urlencoded" -k
+  # --header "Content-Type: application/x-www-form-urlencoded"
 
   url = 'https://developer.api.autodesk.com/authentication/v1/authenticate'
 
@@ -101,15 +101,16 @@ def main():
 
   r = requests.post(url, data=data, headers=headers)
 
-  print r.status_code
-  print r.headers['content-type']
-  print type(r.content)
-  content = eval(r.content)
-  print content
-  # -- example results --
-  # 200
-  # application/json
-  # {"token_type":"Bearer","expires_in":1799,"access_token":"ESzsFt7OZ90tSUBGh6JrPoBjpdEp"}
+  if verbose:
+    print r.status_code
+    print r.headers['content-type']
+    print type(r.content)
+    content = eval(r.content)
+    print content
+    # -- example results --
+    # 200
+    # application/json
+    # {"token_type":"Bearer","expires_in":1799,"access_token":"ESzsFt7OZ90tSUBGh6JrPoBjpdEp"}
 
   if 200 != r.status_code:
     print "Authentication returned status code %s." % r.status_code
@@ -117,7 +118,7 @@ def main():
 
   access_token = content['access_token']
 
-  print access_token
+  print 'Step 2 returns access token', access_token
 
   # Step 3: Create a bucket
 
@@ -140,14 +141,46 @@ def main():
 
   r = requests.post(url, data=data, headers=headers)
 
-  print r.status_code
-  print r.headers['content-type']
-  print r.content
-  # -- example results --
-  # 400
-  # None
+  if verbose:
+    print r.status_code
+    print r.headers['content-type']
+    print r.content
+    # -- example results --
+    # 400
+    # None
 
   # Step 4: Upload a file
+
+  # curl -k \
+  # --header "Authorization: Bearer K16B98iaYNElzVheldlUAUqOoMRC" --header "Content-Length: 308331" \
+  # -H "Content-Type:application/octet-stream" --header "Expect:" \
+  # --upload-file "skyscpr1.3ds"
+  # -X PUT https://developer.api.autodesk.com/oss/v1/buckets/mybucket/objects/skyscpr1.3ds
+
+  filesize = os.path.getsize( model_filepath )
+  model_filename = os.path.basename( model_filepath )
+
+  url = 'https://developer.api.autodesk.com/oss/v1/buckets/' + BUCKET_KEY + '/object/' + model_filename
+
+  headers = {
+    'Content-Type' : 'application/octet-stream',
+    'Content-Length' : str(filesize),
+    'Authorization' : 'Bearer ' + access_token,
+    'Expect' : ''
+  }
+
+  files = {
+    model_filename : open( model_filepath, 'rb' )
+  }
+
+  r = requests.put(url, headers=headers, files=files)
+
+  if verbose:
+    print r.status_code
+    print r.headers['content-type']
+    print r.content
+    # -- example results --
+
 
 if __name__ == '__main__':
   main()
