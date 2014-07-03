@@ -9,6 +9,8 @@ https://developer.autodesk.com > Get Started
 
 http://developer.api.autodesk.com/documentation/v1/index.html
 
+http://developer.api.autodesk.com/documentation/v1/vs_quick_start.html
+
 Before that, register your consumer key, of course:
 
 https://developer.autodesk.com > My Apps
