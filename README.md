@@ -3,7 +3,9 @@ workflow-python
 
 Python sample demonstrating the viewer authorisation and translation process in a Python command line app.
 
-All you have to do is perform the steps described in the doucmentation:
+Currently still work in progress.
+
+This Python script simply performs the steps described in the quick start documentation:
 
 https://developer.autodesk.com > Get Started
 
