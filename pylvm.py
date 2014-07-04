@@ -42,9 +42,10 @@ def main():
   "Drive Autodesk 3D viewer authorisation and translation process."
 
   progname = 'pylmv'
-  usage = 'usage: %s [options] model' % progname
+  usage = 'usage: %s [options]' % progname
   parser = OptionParser( usage, version = progname + ' ' + _version )
-  parser.add_option( '-c', '--credentials', dest='credentials_filename', help = 'credentials filename', metavar="FILE", default='/a/src/web/viewer/pylmv/j/credentials.txt' )
+  parser.add_option( '-c', '--credentials', dest='credentials_filename', help = 'credentials filename', metavar="FILE", default='/a/src/web/viewer/pylmv/j/credentials_pylmv.txt' )
+  parser.add_option( '-m', '--model', dest='model_filename', help = 'model filename', metavar="FILE", default='/a/rvt/two_columns.rvt' )
   parser.add_option( '-q', '--quiet', action='store_true', dest='quiet', help = 'reduce verbosity' )
 
   (options, args) = parser.parse_args()
@@ -54,28 +55,30 @@ def main():
 
   verbose = not options.quiet
 
-  n = len( args )
-
-  if (1 > n) or (1 < n):
+  if 1 < len( args ):
     raise SystemExit(parser.print_help() or 1)
 
-  model_filepath = args[0]
+  model_filepath = options.model_filename
+
+  if not model_filepath:
+    print 'Please specify a model file to process.'
+    raise SystemExit(parser.print_help() or 2)
 
   if not os.path.exists( model_filepath ):
     print _file_missing_prompt % ('model', model_filepath)
-    raise SystemExit(parser.print_help() or 2)
+    raise SystemExit(parser.print_help() or 3)
 
   # Step 1: Register and create application, retrieve credentials
 
   if not os.path.exists( options.credentials_filename ):
     print _file_missing_prompt % ('credentials', options.credentials_filename)
-    raise SystemExit(parser.print_help() or 3)
+    raise SystemExit(parser.print_help() or 4)
 
   credentials = parse_credentials(options.credentials_filename)
 
   if not credentials:
     print "Invalid credentials specified in '%s'." % options.credentials_filename
-    raise SystemExit(parser.print_help() or 4)
+    raise SystemExit(parser.print_help() or 5)
 
   consumer_key = credentials[0]
   consumer_secret = credentials[1]
@@ -114,7 +117,7 @@ def main():
 
   if 200 != r.status_code:
     print "Authentication returned status code %s." % r.status_code
-    raise SystemExit(5)
+    raise SystemExit(6)
 
   access_token = content['access_token']
 
@@ -206,7 +209,7 @@ def main():
 
     if 200 != r.status_code:
       print "Bucket creation returned status code %s." % r.status_code
-      raise SystemExit(6)
+      raise SystemExit(7)
 
   # Step 4: Upload a file
 
