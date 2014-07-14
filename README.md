@@ -37,7 +37,7 @@ None.
 
 ##Setup/Usage Instructions
 
-* Get your consumer key/secrete key from https://developer.autodesk.com 
+* Get your consumer key/secret key from https://developer.autodesk.com 
 * Todo.
 
 ##Written by 
