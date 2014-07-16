@@ -36,7 +36,7 @@ Standard Python installation, the Python requests library, maybe switch to the P
 
 ## Setup/Usage Instructions
 
-* Get your consumer key/secret key from https://developer.autodesk.com
+Request your consumer key/secret key from https://developer.autodesk.com.
 
 
 ## License
