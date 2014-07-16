@@ -1,5 +1,7 @@
 # workflow-python
 
+Demonstrate the Autodesk View and Data API authorisation and translation process in a Python command line script.
+
 
 ## Description
 
@@ -9,15 +11,13 @@ The workflow-python sample demonstrates the Autodesk View and Data API authorisa
 
 It closely follows the steps described in the documentation:
 
-https://developer.autodesk.com > Get Started
-
-http://developer.api.autodesk.com/documentation/v1/index.html
-
-http://developer.api.autodesk.com/documentation/v1/vs_quick_start.html
+* https://developer.autodesk.com > Get Started
+* http://developer.api.autodesk.com/documentation/v1/index.html
+* http://developer.api.autodesk.com/documentation/v1/vs_quick_start.html
 
 In order to make use of this sample, you need to register your consumer key, of course:
 
-https://developer.autodesk.com > My Apps
+* https://developer.autodesk.com > My Apps
 
 This provides the credentials to save in the file [credentials.txt](credentials.txt).
 
