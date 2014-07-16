@@ -7,7 +7,7 @@
 
 The workflow-python sample demonstrates the Autodesk View and Data API authorisation and translation process in a Python command line script, [pyadva.py](pyadva.py).
 
-It closely follows the steps described in the doucmentation:
+It closely follows the steps described in the documentation:
 
 https://developer.autodesk.com > Get Started
 
