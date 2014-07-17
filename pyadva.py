@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# pylvm.py - demonstrate Autodesk 3D viewer authorisation and translation process in Python
+# pyadva.py - demonstrate Autodesk View and Data API authorisation and translation process in Python
 #
 # Copyright (C) 2014 by Jeremy Tammik, Autodesk Inc.
 #

@@ -23,6 +23,12 @@ This provides the credentials to save in the file [credentials.txt](credentials.
 
 Currently still work in progress.
 
+At the moment, you should probably take a look at the [workflow-curl-view.and.data.api](https://github.com/Developer-Autodesk/workflow-curl-view.and.data.api) sample using Unix shell scripts and cURL.
+It is more fundamental than this Python sample and provides more working functionality than what is planned for this sample.
+
+The Python one will be nice to have one of these days, especially because it might be possible to implement it so that it runs on both Unix and Windows. I hope you are already workhng on some flavour of Unix anyway, though.
+
+
 
 ## Dependencies
 
