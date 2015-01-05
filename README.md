@@ -2,6 +2,9 @@
 
 Demonstrate the Autodesk View and Data API authorisation and translation process in a Python command line script.
 
+## Update
+
+This sample is retired, please refer to other workflow samples.
 
 ## Description
 
