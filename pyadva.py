@@ -244,8 +244,13 @@ def main():
     print 'curl -k -H "Authorization: Bearer %s" -H "Content-Length: %s" -H "Content-Type:application/octet-stream" -H "Expect:" -T "%s" -X PUT %s' % (access_token, filesize, model_filepath, url)
 
     with open(model_filepath, 'rb') as f:
-      files = { model_filename : f }
-      r = requests.put(url, headers=headers, files=files)
+      #files = { model_filename : f }
+      #r = requests.put(url, headers=headers, files=files)
+      #uploading does not aceept multi-parts objects. 
+      #see http://docs.python-requests.org/en/latest/api/
+      # files: Dictionary of 'name': file-like-objects (or {'name': ('filename', fileobj)}) for multipart encoding upload.
+      # data:  Dictionary, bytes, or file-like object to send in the body of the Request.
+      r = requests.put(url, headers=headers, data=f) 
 
     #with open(model_filepath, 'rb') as f:
     #  request = requests.put(url, headers=headers, data=f)
