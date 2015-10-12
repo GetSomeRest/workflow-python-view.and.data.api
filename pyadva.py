@@ -40,15 +40,16 @@ def parse_credentials(filename):
 
 def main():
   "Drive Autodesk 3D viewer authorisation and translation process."
-
+  global BUCKET_KEY
+  
   progname = 'pylmv'
   usage = 'usage: %s [options]' % progname
   parser = OptionParser( usage, version = progname + ' ' + _version )
   parser.add_option( '-b', '--bucketskip', action='store_true', dest='bucketskip', help = 'skip bucket creation' )
-  parser.add_option( '-c', '--credentials', dest='credentials_filename', help = 'credentials filename', metavar="FILE", default='/a/src/web/viewer/pylmv/j/credentials.txt' )
-  parser.add_option( '-m', '--model', dest='model_filename', help = 'model filename', metavar="FILE", default='/a/rvt/two_columns.rvt' )
-  parser.add_option( '-q', '--quiet', dest='quiet', action='store_true', default=True, help = 'reduce verbosity' )
-  parser.add_option( '-u', '--urn', dest='urn', help = 'specify urn of already uploaded model file', default='dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6anRidWNrZXQvdHdvX2NvbHVtbnNfcnZ0' )
+  parser.add_option( '-c', '--credentials', dest='credentials_filename', help = 'credentials filename', metavar="FILE", default='credentials.txt' )
+  parser.add_option( '-m', '--model', dest='model_filename', help = 'model filename', metavar="FILE", default='samples/Au.obj' )
+  parser.add_option( '-q', '--quiet', dest='quiet', action='store_true', default=False, help = 'reduce verbosity' )
+  parser.add_option( '-u', '--urn', dest='urn', help = 'specify urn of already uploaded model file', default='' )
 
   (options, args) = parser.parse_args()
 
@@ -84,7 +85,8 @@ def main():
 
   consumer_key = credentials[0]
   consumer_secret = credentials[1]
-
+  BUCKET_KEY =(BUCKET_KEY + '-' + consumer_key).lower ()
+  
   # Step 2: Get your access token
 
   # curl -k \
@@ -222,8 +224,8 @@ def main():
     urn = options.urn
   else:
     # curl -k \
-    # --header "Authorization: Bearer K16B98iaYNElzVheldlUAUqOoMRC" --header "Content-Length: 308331" \
-    # -H "Content-Type:application/octet-stream" --header "Expect:" \
+    # --header "Authorization: Bearer K16B98iaYNElzVheldlUAUqOoMRC" \
+    # -H "Content-Type:application/octet-stream" \
     # --upload-file "skyscpr1.3ds"
     # -X PUT https://developer.api.autodesk.com/oss/v1/buckets/mybucket/objects/skyscpr1.3ds
 
@@ -234,14 +236,14 @@ def main():
 
     headers = {
       'Content-Type' : 'application/octet-stream',
-      'Content-Length' : str(filesize),
+      #'Content-Length' : str(filesize),
       'Authorization' : 'Bearer ' + access_token,
-      'Expect' : ''
+      #'Expect' : ''
     }
 
     print "Step 4: starting upload of model file '%s', %s bytes..." % (model_filename,filesize)
 
-    print 'curl -k -H "Authorization: Bearer %s" -H "Content-Length: %s" -H "Content-Type:application/octet-stream" -H "Expect:" -T "%s" -X PUT %s' % (access_token, filesize, model_filepath, url)
+    print 'curl -k -H "Authorization: Bearer %s" -H "Content-Type:application/octet-stream" -T "%s" -X PUT %s' % (access_token, model_filepath, url)
 
     with open(model_filepath, 'rb') as f:
       #files = { model_filename : f }
@@ -275,8 +277,8 @@ def main():
       #     "content-type" : "application/octet-stream"
       #   } ]
       # }
-
-    urn = r.content['objects']['id']
+    content = eval(r.content)
+    urn = content['objects'][0]['id']
     print 'id:', urn
 
     # import base64
