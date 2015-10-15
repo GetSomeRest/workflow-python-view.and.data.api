@@ -230,7 +230,8 @@ def main():
     # -X PUT https://developer.api.autodesk.com/oss/v1/buckets/mybucket/objects/skyscpr1.3ds
 
     filesize = os.path.getsize( model_filepath )
-    model_filename = os.path.basename( model_filepath ).replace('.','_')
+    model_filename = os.path.basename( model_filepath ).replace(' ', '+')
+    #model_filename = model_filename.replace('.','_')
 
     url = 'https://developer.api.autodesk.com/oss/v1/buckets/' + BUCKET_KEY + '/objects/' + model_filename
 
