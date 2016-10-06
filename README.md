@@ -1,3 +1,5 @@
+# Deprecated sample - not maintained anymore (Summer 2016)
+
 # workflow-python
 
 Demonstrate the Autodesk View and Data API authorisation and translation process in a Python command line script.
